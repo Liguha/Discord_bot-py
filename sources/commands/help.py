@@ -7,7 +7,7 @@ from ..core.parser import CommandPareser
 
 
 @description("Help notes")
-def command(bot: DiscordBot, msg: ds.Message, flags: list[str], content: str) -> list[str]:
+def command(msg: ds.Message, flags: list[str], content: str) -> list[str]:
     if content == "":
         files = os.listdir(Path(__file__).parent)
         return ["; ".join(files)]
