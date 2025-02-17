@@ -1,0 +1,6 @@
+name: discord_bot
+dependencies:
+  - discord.py
+  - pyyaml
+  - pip:
+    - audioop-lts
