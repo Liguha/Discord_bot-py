@@ -3,6 +3,6 @@ from ..core.bot import DiscordBot
 from ..core.command import description, flag_group
 
 @description("Python eval")
-def command(msg: ds.Message, flags: list[str], content: str) -> list[str]:
+async def command(msg: ds.Message, flags: list[str], content: str) -> list[str]:
     ans = str(eval(content))
     return [ans]

@@ -1,17 +1,15 @@
-import os
 import discord as ds
 from pathlib import Path
-from ..core.bot import DiscordBot
-from ..core.command import Command, description
-from ..core.parser import CommandPareser
+from ..core.command import Command, description, all_commands
+from ..core.parser import CommandParser
 
 
 @description("Help notes")
-def command(msg: ds.Message, flags: list[str], content: str) -> list[str]:
+async def command(msg: ds.Message, flags: list[str], content: str) -> list[str]:
     if content == "":
-        files = os.listdir(Path(__file__).parent)
-        return ["; ".join(files)]
-    parser: CommandPareser = CommandPareser(content)
+        cmds: list[str] = all_commands()
+        return [f"List of available commands: {", ".join(cmds)}."]
+    parser: CommandParser = CommandParser(content)
     cmd: Command = parser.command
     flags: list[str] = parser.flags
     flag_desc: str = ""

@@ -1,13 +1,18 @@
 import importlib
 from copy import copy
 
-from .command import Command, FlagGroup
+from .command import Command, FlagGroup, all_commands
 
-class CommandPareser:
+__all__ = ["CommandParser"]
+
+class CommandParser:
     def __init__(self, msg: str):
         words: list[str] = msg.split(" ")
         words.reverse()
         cmd: str = words.pop()
+        if cmd not in all_commands():
+            words = [cmd]
+            cmd = "_parse_error"
         self._command: Command = importlib.import_module(f"sources.commands.{cmd}").command
         groups: list[FlagGroup] = copy(self._command.flag_groups)
         self._flags: list[str] = [None] * len(groups)

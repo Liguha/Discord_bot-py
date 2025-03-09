@@ -1,6 +1,15 @@
 name: discord_bot
+channels:
+  - default
+  - conda-forge
 dependencies:
   - discord.py
+  - nest-asyncio
   - pyyaml
+  - pynacl
+  - openai
+  - pytube
+  - ffmpeg
   - pip:
     - audioop-lts
+    - pytubefix
