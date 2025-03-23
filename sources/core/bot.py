@@ -3,15 +3,14 @@ import asyncio
 import discord as ds
 import nest_asyncio
 
-from contextlib import suppress
 from typing import Callable, Coroutine
 from pathlib import Path
 from openai import OpenAI
 from functools import partial
+from concurrent.futures import ThreadPoolExecutor
 
-from .parser import CommandParser
-from .storage import Storage
-from .text_split import split_message
+from .structures import CommandParser, Storage, IncorrectCommandUsage
+from .utils.text_split import split_message
 
 nest_asyncio.apply()
 
@@ -24,10 +23,11 @@ class DiscordBot:
         self._storage: Storage = Storage()
         self._storage.set_value("client", self._client, False)
         self._storage.set_value("prefix", "<", False)
-        with suppress(FileNotFoundError):
-            file = open(Path(__file__).parent.parent / "configs" / "creds.yml")
+        with open(Path(__file__).parent.parent / "configs" / "creds.yml") as file:
             self._creds = yaml.safe_load(file)
-            file.close()
+        with open(Path(__file__).parent.parent / "configs" / "externals.yml") as file:
+            self._externals = yaml.safe_load(file)
+            self._storage.set_value("externals", self._externals, True)
         self._client.event(self.on_message)
 
     async def on_message(self, message: ds.Message) -> None:
@@ -42,23 +42,27 @@ class DiscordBot:
             cmd: Callable = parser.command.partial(self._storage)
             coro: Coroutine = cmd(message, parser.flags, parser.content)
             try:
-                loop = self._client.loop
                 answers: list[str]
                 if cmd.execution == "main":
                     answers = await coro
                 if cmd.execution == "executor":
-                    answers = await loop.run_in_executor(None, partial(asyncio.run, coro))
+                    executor = ThreadPoolExecutor(max_workers=1)
+                    loop = self._client.loop
+                    answers = await loop.run_in_executor(executor, partial(asyncio.run, coro))
                 task.cancel()
                 splitted: list[str] = []
                 for answer in answers:
                     splitted += split_message(answer)
                 for msg in splitted:
                     await message.channel.send(msg)
-            except Exception as e:  # TODO: normal handler
+            except Exception as ex:
                 task.cancel()
-                await message.channel.send(f"Caught exception: {e}")
+                if isinstance(ex, IncorrectCommandUsage):
+                    await message.channel.send(f"{ex}")
+                else:
+                    await message.channel.send(f"Caught exception: {ex}")
 
     def run(self) -> None:
-        deepseek = OpenAI(api_key=self._creds["deepseek_token"], base_url="https://openrouter.ai/api/v1")
-        self._storage.set_value("deepseek_client", deepseek)
+        chatbot = OpenAI(api_key=self._creds["chatbot_token"], base_url=self._externals["chatbot_url"])
+        self._storage.set_value("chatbot_client", chatbot)
         self._client.run(self._creds["bot_token"])

@@ -3,14 +3,14 @@ from typing import Callable, Any, Self, Literal
 from functools import partial
 from pathlib import Path
 
-from ..core.storage import Storage, Item
+from .storage import Storage, Item
 
 __all__ = ["all_commands", "FlagGroup", "Command", 
            "flag_group", "description", "storage_variable",
-           "execute_into"]
+           "execute_into", "IncorrectCommandUsage"]
 
 def all_commands() -> list[str]:
-    commands_dir = Path(__file__).parent.parent / "commands"
+    commands_dir = Path(__file__).parent.parent.parent / "commands"
     commands: list[str] = []
     for file in commands_dir.iterdir():
         command = file.stem
@@ -23,6 +23,9 @@ class FlagGroup:
     description: str
     flags: list[str]
     flag_desc: dict[str, str]
+
+class IncorrectCommandUsage(Exception):
+    pass
 
 @dataclass
 class Command:

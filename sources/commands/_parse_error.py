@@ -1,5 +1,5 @@
 import discord as ds
-from ..core.command import description
+from ..core import description
 
 @description("Unavailable command.")
 async def command(msg: ds.Message, flags: list[str | None], content: str) -> list[str]:

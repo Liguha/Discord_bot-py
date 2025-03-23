@@ -1,7 +1,6 @@
 import discord as ds
 from pathlib import Path
-from ..core.command import Command, description, all_commands
-from ..core.parser import CommandParser
+from ..core import Command, CommandParser, description, all_commands
 
 
 @description("Help notes")

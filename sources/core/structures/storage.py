@@ -5,8 +5,8 @@ from copy import deepcopy
 __all__ = ["Item", "Storage"]
 
 @dataclass
-class Item:
-    value: Any
+class Item[T]:
+    value: T
     constant: bool = False
 
     @property
